@@ -1,18 +1,23 @@
 from flask import Flask, render_template, redirect
-from flask_login import LoginManager
 from flask_sqlalchemy import SQLAlchemy
 from flask_wtf import CsrfProtect
+import os
 
 app = Flask(__name__)
-login_manager = LoginManager(app)
+app.config.from_pyfile("config.py")
 db = SQLAlchemy(app)
+csrf = CsrfProtect(app)
 
-from .user import user
+
+@app.before_first_request
+def setup():
+    db.create_all()
+
+from nmhvoice.user import user
 app.register_blueprint(user)
 
-from .vote import vote
-app.register_blueprint(vote)
-
+from nmhvoice.vote import vote
+app.register_blueprint(vote, url_prefix='/vote')
 
 @app.route('/')
 def index():
